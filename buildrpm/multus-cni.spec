@@ -32,17 +32,23 @@ Multus CNI is a container network interface (CNI) plugin for Kubernetes that ena
 
 %install
 install -D -m 755 bin/multus %{buildroot}%{_bindir}/multus
-install -D -m 755 bin/generate-kubeconfig %{buildroot}%{_bindir}/generate-kubeconfig
 install -D -m 755 bin/multus-daemon %{buildroot}%{_bindir}/multus-daemon
+install -D -m 755 bin/multus-shim %{buildroot}%{_bindir}/multus-shim
+install -D -m 755 bin/install_multus %{buildroot}%{_bindir}/install_multus
+install -D -m 755 bin/thin_entrypoint %{buildroot}%{_bindir}/thin_entrypoint
 
 
 %files
 %license LICENSE THIRD_PARTY_LICENSES.txt
 %attr(755,root,root) %{_bindir}/multus
-%attr(755,root,root) %{_bindir}/generate-kubeconfig
 %attr(755,root,root) %{_bindir}/multus-daemon
+%attr(755,root,root) %{_bindir}/multus-shim
+%attr(755,root,root) %{_bindir}/install_multus
+%attr(755,root,root) %{_bindir}/thin_entrypoint
 
 
 %changelog
 * {{{.changelog_timestamp}}} - %{version}-%{oracle_release_version}
 - Added Oracle specific files for multus-cni
+- Removed generate-kubeconfig
+- Added multus-daemon, multus-shim, install_multus, thin_entrypoint
