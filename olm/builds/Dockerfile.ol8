@@ -8,8 +8,12 @@ RUN dnf install -y /tmp/*.rpm &&\
 
 FROM container-registry.oracle.com/os/oraclelinux:8-slim
 
+COPY --from=0 /LICENSES /usr/src/multus-cni/LICENSE
+COPY --from=0 /usr/bin /usr/src/multus-cni/bin
+
+COPY --from=0 /usr/bin/install_multus /
+COPY --from=0 /usr/bin/thin_entrypoint /
+
 WORKDIR /
 
-ADD ./images/entrypoint.sh /
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/thin_entrypoint"]
