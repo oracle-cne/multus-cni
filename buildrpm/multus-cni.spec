@@ -6,6 +6,11 @@
 %global app_name multus-cni
 %global app_version {{{$version}}}
 %global oracle_release_version 1
+%ifarch %{arm} arm64 aarch64
+%global custom_arch linux/arm64
+%else
+%global custom_arch linux/amd64
+%endif
 
 Name:           %{app_name}
 Version:        %{app_version}
@@ -27,6 +32,7 @@ Multus CNI is a container network interface (CNI) plugin for Kubernetes that ena
 
 
 %build
+export TARGETPLATFORM=%{custom_arch}
 ./hack/build-go.sh
 
 
