@@ -27,9 +27,10 @@ fi
 VERSION=v${1}
 IMAGE_LOCATION=${2}
 REGISTRY=${3:-container-registry.oracle.com/olcne}
+IMAGE_TAG=${VERSION}-1
 DOCKER_FILE=./olm/builds/Dockerfile.ol8
 
 mkdir -p ${IMAGE_LOCATION}/oracle_docker
 
-docker build --pull --build-arg https_proxy=${https_proxy} --build-arg VERSION=${VERSION} --build-arg IMAGE=multus-cni -t ${REGISTRY}/multus-cni:${VERSION} -f ${DOCKER_FILE} .
-docker save -o ${IMAGE_LOCATION}/oracle_docker/multus-cni.tar ${REGISTRY}/multus-cni:${VERSION}
+docker build --pull --build-arg https_proxy=${https_proxy} --build-arg VERSION=${VERSION} --build-arg IMAGE=multus-cni -t ${REGISTRY}/multus-cni:${IMAGE_TAG} -f ${DOCKER_FILE} .
+docker save -o ${IMAGE_LOCATION}/oracle_docker/multus-cni.tar ${REGISTRY}/multus-cni:${IMAGE_TAG}
