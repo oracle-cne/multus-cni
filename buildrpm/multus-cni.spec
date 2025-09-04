@@ -1,7 +1,9 @@
 {{{$version := printf "%s.%s.%s" .major .minor .patch}}}
 
 %global debug_package %{nil}
+{{{- if semverCompare "<4.2.1" $version }}}
 %global build_dir src/github.com/projectcalico/calicoctl
+{{{- end }}}
 
 %global app_name multus-cni
 %global app_version {{{$version}}}
@@ -42,7 +44,9 @@ install -D -m 755 bin/multus-daemon %{buildroot}%{_bindir}/multus-daemon
 install -D -m 755 bin/multus-shim %{buildroot}%{_bindir}/multus-shim
 install -D -m 755 bin/install_multus %{buildroot}%{_bindir}/install_multus
 install -D -m 755 bin/thin_entrypoint %{buildroot}%{_bindir}/thin_entrypoint
-
+{{{- if semverCompare ">=4.2.1" $version }}}
+install -D -m 755 bin/passthru %{buildroot}%{_bindir}/passthru
+{{{- end }}}
 
 %files
 %license LICENSE THIRD_PARTY_LICENSES.txt
@@ -51,10 +55,16 @@ install -D -m 755 bin/thin_entrypoint %{buildroot}%{_bindir}/thin_entrypoint
 %attr(755,root,root) %{_bindir}/multus-shim
 %attr(755,root,root) %{_bindir}/install_multus
 %attr(755,root,root) %{_bindir}/thin_entrypoint
-
+{{{- if semverCompare ">=4.2.1" $version }}}
+%attr(755,root,root) %{_bindir}/passthru
+{{{- end }}}
 
 %changelog
-* {{{.changelog_timestamp}}} - %{version}-%{oracle_release_version}
+* {{{.changelog_timestamp}}} - {{{$version}}}-1
 - Added Oracle specific files for multus-cni
 - Removed generate-kubeconfig
+{{{- if semverCompare ">=4.2.1" $version }}}
+- Added multus-daemon, multus-shim, install_multus, thin_entrypoint and passthru
+{{{- else }}}
 - Added multus-daemon, multus-shim, install_multus, thin_entrypoint
+{{{- end }}}
