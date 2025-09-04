@@ -49,5 +49,5 @@ install -p -m 755 -t %{buildroot}/usr/local/share/olcne _output/oracle_docker/mu
 
 
 %changelog
-* {{{.changelog_timestamp}}} - %{version}-%{oracle_release_version}
+* {{{.changelog_timestamp}}} - {{{$version}}}-1
 - Added Oracle specific files for multus-cni
