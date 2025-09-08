@@ -24,6 +24,7 @@ Source:         %{name}-%{version}.tar.bz2
 Vendor:         Oracle America
 BuildRequires:  git
 BuildRequires:  golang >= 1.21.0
+Patch0:		build-go.patch
 
 %description
 Multus CNI is a container network interface (CNI) plugin for Kubernetes that enables attaching multiple network interfaces to pods.
@@ -31,6 +32,7 @@ Multus CNI is a container network interface (CNI) plugin for Kubernetes that ena
 
 %prep
 %setup -n %{name}-%{version}
+%patch0
 go mod tidy
 
 %build
