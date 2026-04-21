@@ -9,7 +9,7 @@ spec:
             "plugins": [
                 {
                     "type": "macvlan",
-                    "master": "eth1",
+                    "master": "{{ MACVLAN_MASTER_INTERFACE }}",
                     "mode": "bridge",
                     "ipam": {
                         "type": "static"
@@ -32,10 +32,24 @@ metadata:
 spec:
   containers:
   - name: default-route-worker1
-    image: centos:8
-    command: ["/bin/sleep", "10000"]
+    image: {{ E2E_POD_IMAGE }}
+    command:
+    - /bin/bash
+    - -lc
+    - |
+      set -euxo pipefail
+      if ! command -v ip >/dev/null 2>&1; then
+        if command -v dnf >/dev/null 2>&1; then
+          dnf install -y iproute
+        else
+          microdnf install -y iproute
+        fi
+      fi
+      trap : TERM INT
+      sleep infinity & wait
     securityContext:
       privileged: true
+  nodeName: {{ TARGET_NODE_1 }}
 ---
 apiVersion: v1
 kind: Pod
@@ -51,7 +65,21 @@ metadata:
 spec:
   containers:
   - name: default-route-worker2
-    image: centos:8
-    command: ["/bin/sleep", "10000"]
+    image: {{ E2E_POD_IMAGE }}
+    command:
+    - /bin/bash
+    - -lc
+    - |
+      set -euxo pipefail
+      if ! command -v ip >/dev/null 2>&1; then
+        if command -v dnf >/dev/null 2>&1; then
+          dnf install -y iproute
+        else
+          microdnf install -y iproute
+        fi
+      fi
+      trap : TERM INT
+      sleep infinity & wait
     securityContext:
       privileged: true
+  nodeName: {{ TARGET_NODE_2 }}

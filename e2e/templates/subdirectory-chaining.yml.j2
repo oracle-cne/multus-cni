@@ -9,7 +9,7 @@ data:
     #!/bin/bash
     set -euxo pipefail
 
-    DEFAULT_NETWORK_CNI_NAME="kindnet"
+    DEFAULT_NETWORK_CNI_NAME="{{ DEFAULT_NETWORK_CNI_NAME }}"
 
     cleanup() {
       echo "Cleaning up..."
@@ -73,7 +73,14 @@ spec:
           effect: NoExecute
       containers:
       - name: setup
-        image: quay.io/fedora/fedora:40
+        image: {{ E2E_POD_IMAGE }}
+        command:
+        - /bin/bash
+        - -lc
+        - |
+          set -euxo pipefail
+          trap : TERM INT
+          /bin/bash /scripts/setup.sh
         securityContext:
           privileged: true
         volumeMounts:
@@ -81,7 +88,6 @@ spec:
           mountPath: /host/etc/cni/net.d
         - name: script-volume
           mountPath: /scripts
-        command: ["/bin/bash", "/scripts/setup.sh"]
       volumes:
       - name: cni-config
         hostPath:

@@ -144,7 +144,7 @@ spec:
       serviceAccountName: multus
       containers:
       - name: kube-multus
-        image: localhost:5000/multus:e2e
+        image: {{ MULTUS_IMAGE }}
         command: ["/thin_entrypoint"]
         args:
         - "--multus-conf-file=auto"
@@ -168,7 +168,7 @@ spec:
           mountPath: /tmp/multus-conf
       initContainers:
       - name: install-multus-binary
-        image: localhost:5000/multus:e2e
+        image: {{ MULTUS_IMAGE }}
         command: ["/install_multus"]
         args:
           - "--type"

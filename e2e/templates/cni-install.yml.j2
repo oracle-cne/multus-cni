@@ -6,8 +6,16 @@ metadata:
   namespace: kube-system
 data:
   install_cni.sh: |
+    set -euxo pipefail
     cd /tmp
-    wget https://github.com/containernetworking/plugins/releases/download/v1.4.0/cni-plugins-linux-amd64-v1.4.0.tgz
+    if ! command -v curl >/dev/null 2>&1; then
+      if command -v dnf >/dev/null 2>&1; then
+        dnf install -y curl tar gzip
+      else
+        microdnf install -y curl tar gzip
+      fi
+    fi
+    curl -L -o /tmp/cni-plugins-linux-amd64-v1.4.0.tgz https://github.com/containernetworking/plugins/releases/download/v1.4.0/cni-plugins-linux-amd64-v1.4.0.tgz
     cd /host/opt/cni/bin
     tar xvfzp /tmp/cni-plugins-linux-amd64-v1.4.0.tgz
     sleep infinite
@@ -36,8 +44,8 @@ spec:
         effect: NoSchedule
       containers:
       - name: install-cni-plugins
-        image: alpine
-        command: ["/bin/sh", "/scripts/install_cni.sh"]
+        image: {{ E2E_POD_IMAGE }}
+        command: ["/bin/bash", "/scripts/install_cni.sh"]
         resources:
           requests:
             cpu: "100m"
