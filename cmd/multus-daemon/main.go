@@ -142,7 +142,7 @@ func main() {
 
 func startMultusDaemon(ctx context.Context, daemonConfig *srv.ControllerNetConf, ignoreReadinessIndicator bool) error {
 	if user, err := user.Current(); err != nil || user.Uid != "0" {
-		return fmt.Errorf("failed to run multus-daemon with root: %v, now running in uid: %s", err, user.Uid)
+		return fmt.Errorf("failed to run multus-daemon with root: %v, now running in uid: %+v", err, user)
 	}
 
 	if err := srv.FilesystemPreRequirements(daemonConfig.SocketDir); err != nil {

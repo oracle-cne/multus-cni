@@ -132,7 +132,7 @@ spec:
       serviceAccountName: multus
       containers:
       - name: kube-multus
-        image: localhost:5000/multus:e2e
+        image: {{ MULTUS_IMAGE }}
         command: [ "/usr/src/multus-cni/bin/multus-daemon" ]
         resources:
           requests:
@@ -168,7 +168,7 @@ spec:
               fieldPath: spec.nodeName
       initContainers:
       - name: install-multus-shim
-        image: localhost:5000/multus:e2e
+        image: {{ MULTUS_IMAGE }}
         command:
           - "/usr/src/multus-cni/bin/install_multus"
           - "-d"

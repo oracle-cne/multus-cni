@@ -8,7 +8,7 @@ spec:
     devices:
       requests:
       - name: gpu
-        deviceClassName: gpu.example.com
+        deviceClassName: {{ DRA_DEVICE_CLASS_NAME }}
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
@@ -40,9 +40,15 @@ metadata:
 spec:
   containers:
   - name: ctr0
-    image: ubuntu:22.04
-    command: ["bash", "-c"]
-    args: ["export; sleep 9999"]
+    image: {{ E2E_POD_IMAGE }}
+    command:
+    - /bin/bash
+    - -lc
+    - |
+      set -euxo pipefail
+      env
+      trap : TERM INT
+      sleep infinity & wait
     resources:
       claims:
       - name: gpu

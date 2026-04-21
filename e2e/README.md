@@ -1,42 +1,75 @@
-## Multus e2e test with kind
+## Multus e2e tests against an existing cluster
 
-### Prerequisite
+### Prerequisites
 
-To run the e2e test, you need the following components:
+The e2e suite now targets an already running Kubernetes cluster.
 
-- curl
-- jinjanator (optional)
-- docker
+Required tools:
 
-### How to test e2e
+- `kubectl`
+- `jq`
+- `sed`
 
-```
-$ git clone https://github.com/k8snetworkplumbingwg/multus-cni.git
-$ cd multus-cni/e2e
-$ ./get_tools.sh
-```
+Optional tools:
 
-If you have `jinjanator` you can generate the YAML with:
+- `helm` for clusters where DRA components are managed separately
+- `podman` and `skopeo` when building or mirroring an OCR-hosted `MULTUS_IMAGE`
 
-```
-$ ./generate_yamls.sh
-```
+Check the local toolchain with:
 
-Alternatively, if you have trouble with it, use the `sed` script.
-
-```
-$ ./e2e/sed_generate_yaml.sh
+```bash
+./get_tools.sh
 ```
 
-Then, setup the cluster
+### Required environment
 
-```
-$ ./setup_cluster.sh
-$ ./test-simple-macvlan1.sh
+Provide an OCR-hosted Multus image before running `setup_cluster.sh`:
+
+```bash
+export MULTUS_IMAGE=container-registry.oracle.com/your-tenant/multus:e2e
 ```
 
-### How to teardown cluster
+The suite discovers Ready nodes automatically. Override discovery only when the cluster requires explicit placement:
 
+```bash
+export TARGET_NODE_1=<node-name>
+export TARGET_NODE_2=<node-name>
+export STATIC_POD_NODE=<node-name>
+export MACVLAN_MASTER_INTERFACE=<interface-name>
+export DEFAULT_NETWORK_CNI_NAME=<primary-cni-name>
+export DRA_DEVICE_CLASS_NAME=<device-class-name>
 ```
-$ ./teardown.sh
+
+### Generate manifests
+
+The test scripts regenerate `e2e/yamls/` using the current cluster settings:
+
+```bash
+./generate_yamls.sh
+```
+
+### Deploy Multus for e2e
+
+```bash
+./setup_cluster.sh
+```
+
+### Run tests
+
+```bash
+./test-simple-pod.sh
+./test-simple-macvlan1.sh
+./test-default-route1.sh
+./test-subdirectory-chaining.sh
+./test-subdirectory-chaining-passthru.sh
+./test-static-pod.sh
+./test-dra-integration.sh
+```
+
+The DRA test validates a preinstalled DRA driver. It does not clone, build, or load an example driver.
+
+### Remove e2e resources
+
+```bash
+./teardown.sh
 ```

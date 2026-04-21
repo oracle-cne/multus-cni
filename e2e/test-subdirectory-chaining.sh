@@ -1,37 +1,35 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -o errexit
+set -o nounset
+set -o pipefail
 
-export PATH=${PATH}:./bin
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+# shellcheck source=./lib.sh
+source "${SCRIPT_DIR}/lib.sh"
 
-TEST_POD_NAME="sysctl-modified"
+trap cleanup_e2e_helpers EXIT
 
-# Deploy the daemonset that will lay down the chained CNI config
-kubectl apply -f yamls/subdirectory-chaining.yml
+log "Preparing environment for the subdirectory chaining test"
+prepare_basic_environment
+discover_default_network_name
+generate_manifests
 
-# Wait for the daemonset pods to be ready (we need the config to be laid down)
-kubectl rollout status daemonset/cni-setup-daemonset
+log "Applying the chaining DaemonSet manifest"
+kubectl apply -f "${SCRIPT_DIR}/yamls/subdirectory-chaining.yml"
+log "Waiting for the chaining DaemonSet rollout to complete"
+kubectl rollout status daemonset/cni-setup-daemonset --timeout=300s
 
-# Deploy a test pod that will get chained CNI applied
-kubectl apply -f yamls/subdirectory-chaining-pod.yml
+log "Creating the sysctl verification pod"
+kubectl apply -f "${SCRIPT_DIR}/yamls/subdirectory-chaining-pod.yml"
+log "Waiting for the sysctl verification pod to become Ready"
+kubectl wait --for=condition=Ready pod/sysctl-modified --timeout=300s
 
-# Wait for the pod to be Ready
-kubectl wait --for=condition=ready pod/sysctl-modified --timeout=300s
-
-# Check that the sysctl got set properly inside the pod's eth0 interface
-echo "Verifying sysctl arp_filter is set to 1 on eth0"
-
-SYSCTL_VALUE=$(kubectl exec sysctl-modified -- sysctl -n net.ipv4.conf.eth0.arp_filter)
-
-if [ "$SYSCTL_VALUE" != "1" ]; then
-  echo "FAIL: net.ipv4.conf.eth0.arp_filter is not set to 1, got ${SYSCTL_VALUE}" >&2
-  exit 1
-else
-  echo "SUCCESS: net.ipv4.conf.eth0.arp_filter is set correctly."
+log "Checking sysctl net.ipv4.conf.eth0.arp_filter"
+SYSCTL_VALUE="$(kubectl exec sysctl-modified -- sysctl -n net.ipv4.conf.eth0.arp_filter)"
+if [[ "${SYSCTL_VALUE}" != "1" ]]; then
+    fail "net.ipv4.conf.eth0.arp_filter is ${SYSCTL_VALUE}, expected 1"
 fi
 
-# 6. Clean up
-echo "Cleaning up test resources"
-kubectl delete -f yamls/subdirectory-chaining-pod.yml
-kubectl delete -f yamls/subdirectory-chaining.yml
-
-exit 0
+log "Cleaning up chaining test resources"
+kubectl delete -f "${SCRIPT_DIR}/yamls/subdirectory-chaining-pod.yml"
+kubectl delete -f "${SCRIPT_DIR}/yamls/subdirectory-chaining.yml"

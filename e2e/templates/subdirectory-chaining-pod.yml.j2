@@ -5,7 +5,20 @@ metadata:
 spec:
   containers:
   - name: sysctl
-    image: quay.io/dosmith/fedora-procps
-    command: ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
+    image: {{ E2E_POD_IMAGE }}
+    command:
+    - /bin/bash
+    - -lc
+    - |
+      set -euxo pipefail
+      if ! command -v sysctl >/dev/null 2>&1; then
+        if command -v dnf >/dev/null 2>&1; then
+          dnf install -y procps-ng
+        else
+          microdnf install -y procps-ng
+        fi
+      fi
+      trap : TERM INT
+      sleep infinity & wait
     securityContext:
       privileged: true

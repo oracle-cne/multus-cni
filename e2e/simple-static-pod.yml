@@ -7,5 +7,18 @@ metadata:
 spec: 
   containers: 
     - name: web 
-      image: centos:8 
-      command: ["/bin/bash", "-c", "trap : TERM INT; sleep infinity & wait"]
+      image: container-registry.oracle.com/os/oraclelinux:8
+      command:
+        - /bin/bash
+        - -lc
+        - |
+          set -euxo pipefail
+          if ! command -v ip >/dev/null 2>&1; then
+            if command -v dnf >/dev/null 2>&1; then
+              dnf install -y iproute
+            else
+              microdnf install -y iproute
+            fi
+          fi
+          trap : TERM INT
+          sleep infinity & wait
