@@ -1,0 +1,21 @@
+diff --git hack/build-go.sh hack/build-go.sh
+index fcfec0b3..31e9da20 100755
+--- hack/build-go.sh
++++ hack/build-go.sh
+@@ -53,6 +53,7 @@ fi
+ DATE=$(date -u -d "@${SOURCE_DATE_EPOCH:-$(date +%s)}" --iso-8601=seconds)
+ COMMIT=${COMMIT:-$(git rev-parse --verify HEAD)}
+ LDFLAGS="-X gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.version=${VERSION} \
++	-X main.version=${VERSION} \
+ 	-X gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.commit=${COMMIT} \
+ 	-X gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.gitTreeState=${GIT_TREE_STATE} \
+ 	-X gopkg.in/k8snetworkplumbingwg/multus-cni.v4/pkg/multus.releaseStatus=${RELEASE_STATUS} \
+@@ -66,6 +67,8 @@ if [ -n "$MODMODE" ]; then
+ 	BUILD_ARGS=(-mod "$MODMODE")
+ fi
+ 
++BUILD_ARGS+=("-trimpath=false")
++
+ echo "Building multus"
+ go build -o ${DEST_DIR}/multus ${BUILD_ARGS} -ldflags "${LDFLAGS}" "$@" ./cmd/multus
+ echo "Building multus-daemon"
